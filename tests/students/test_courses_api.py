@@ -28,24 +28,31 @@ def cours_factory():
 @pytest.mark.django_db
 def test_get_course(client,cours_factory):    
     courses = cours_factory(_quantity=1)
-    response = client.get('/courses/')
-    assert response.status_code == 200
+    for course in courses:
+        response = client.get('/courses/', data = {'id': course.id})
+        assert response.status_code == 200
+        data = response.json()
+        for n in data:
+            assert n['name'] == course.name
+    
 
 
 @pytest.mark.django_db
 def test_filter_id(client, cours_factory):
     courses =  cours_factory(_quantity=10)
-    response = client.get('/courses/6/')
-    assert response.status_code == 200
-
+    for cours in courses:
+        response = client.get('/courses/', data = {'id': cours.id})        
+        assert response.status_code == 200
+        
 
 @pytest.mark.django_db
 def test_get_courses_list(client, cours_factory):
-    courses =  cours_factory(_quantity=10)
+    courses = cours_factory(_quantity=10)
     response = client.get('/courses/')
     data = response.json()
     assert response.status_code == 200
-    assert len(data) == 10
+    assert len(data) == len(courses)
+
 
 @pytest.mark.django_db
 def test_create_course(client):
@@ -57,21 +64,23 @@ def test_create_course(client):
 
 @pytest.mark.django_db
 def test_update_course(client, cours_factory):    
-    courses = cours_factory(_quantity=1)     
-    response = client.patch('/courses/23/', data={'name': 'физика'})
-    resp = client.get("/courses/23/")
-    assert response.status_code == 200
-    assert resp.status_code == 200
-    assert resp.json()['name'] == 'физика'
+    courses = cours_factory(_quantity=10)
+    for course in courses:     
+        response = client.patch(f'/courses/{course.id}/', data={'name': 'физика'})
+        resp = client.get(f'/courses/{course.id}/')
+        assert response.status_code == 200
+        assert resp.status_code == 200
+        assert resp.json()['name'] == 'физика'
 
 
 @pytest.mark.django_db
 def test_delete_course(client, cours_factory):
-    courses = cours_factory(_quantity=1)
-    response = client.delete('/courses/24/')
-    assert response.status_code == 204
-    resp = client.get('/courses/24/')
-    assert resp.status_code == 404
+    courses = cours_factory(_quantity=10)
+    for course in courses:
+        response = client.delete(f'/courses/{course.id}/')
+        assert response.status_code == 204
+        resp = client.get(f'/courses/{course.id}/')
+        assert resp.status_code == 404
 
 
 
