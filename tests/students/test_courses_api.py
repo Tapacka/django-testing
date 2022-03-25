@@ -26,14 +26,12 @@ def cours_factory():
 
 
 @pytest.mark.django_db
-def test_get_course(client,cours_factory):    
+def test_get_course(client,cours_factory):
     courses = cours_factory(_quantity=1)
     for course in courses:
-        response = client.get('/courses/', data = {'id': course.id})
+        response = client.get(f'/courses/{course.id}/')
         assert response.status_code == 200
-        data = response.json()
-        for n in data:
-            assert n['name'] == course.name
+        assert response.json()['name'] == course.name
     
 
 
